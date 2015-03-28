@@ -5,8 +5,13 @@
 #include <arpa/inet.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <netdb.h>
+#include <sys/types.h>
 /*
-
+sources used:
+http://www-01.ibm.com/support/knowledgecenter/SSB23S_1.1.0.7/com.ibm.ztpf-ztpfdf.doc_put.07/gtpc2/cpp_gethostbyname.html?cp=SSB23S_1.1.0.7%2F0-3-7-1-0-6-6
+google simple tcp server
+http://cboard.cprogramming.com/c-programming/165979-can%27t-get-whole-ip-address-getaddrinfo.html
 
 */
 
@@ -26,30 +31,128 @@ int valid_num(char *num)
     }
     return 1;
 }
+char* hostname_to_ip(char* host)
+{
+			 
+			struct addrinfo hints, *servinfo, *p, *curr;
+			int rv;
+			//printf("%s\n",host );
+			memset(&hints, 0, sizeof hints);
+			hints.ai_family = AF_UNSPEC; // use AF_INET6 to force IPv6
+			hints.ai_socktype = SOCK_STREAM;
+			//sockfd = socket(AF_UNSPEC, SOCK_STREAM, 0);
+			if ((rv = getaddrinfo(host, "http", &hints, &servinfo)) != 0) {
+			    //fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
+			    printf("error\n");
+			    //exit(1);
+			    return NULL;
+			}
+			else
+			{
+				//printf("success\n");
+				
+				for ( curr = servinfo; curr != NULL; curr = curr->ai_next) 
+				{
+						
+			            if (curr->ai_family == AF_INET) 
+			            {
+			            	//printf("AF_INET\n");
+			                char addrbuf[INET_ADDRSTRLEN + 1];
+			                char *addr;
+			 
+			                addr = inet_ntop(AF_INET, &(((struct sockaddr_in *)curr->ai_addr)->sin_addr), addrbuf, sizeof addrbuf);
+			                if (addr == NULL) 
+			                {
+			                   	printf("error\n");
+			            
+			                    return NULL;
+			            	}
+                			printf("%s: IPv4 = %s\n", host, addr);
+                			return addr;
+     
+ 
+            			} 
+			            else
+			            {	
+			            	//printf("AF_INET6\n");
+				            if (curr->ai_family == AF_INET6) 
+				            {
+				                char addrbuf[INET6_ADDRSTRLEN + 1];
+				                char *addr;
+				 
+				                addr = inet_ntop(AF_INET6, &(((struct sockaddr_in6 *)curr->ai_addr)->sin6_addr), addrbuf, sizeof addrbuf);
+				                if (addr == NULL) 
+				                {
+				                    
+				                    printf("error\n");
+				                   
+				                    return NULL;
+				                }
+				                //printf("%s: IPv6 = %s\n", host, addr);
+				                return addr;
+				 
+				            }
+				        }
+				}
+				//sendto(sockfd,sendline,strlen(sendline),0,(struct sockaddr *)&servinfo,sizeof(servinfo));
+			}
+
+			// // loop through all the results and connect to the first we can
+			// for(p = servinfo; p != NULL; p = p->ai_next) {
+			//     if ((sockfd = socket(p->ai_family, p->ai_socktype,
+			//             p->ai_protocol)) == -1) {
+			//         perror("socket");
+			//         continue;
+			//     }
+
+			//     if (connect(sockfd, p->ai_addr, p->ai_addrlen) == -1) {
+			//         close(sockfd);
+			//         perror("connect");
+			//         continue;
+			//     }
+
+			//     break; // if we get here, we must have connected successfully
+			// }
+
+			// if (p == NULL) {
+			//     // looped off the end of the list with no connection
+			//     fprintf(stderr, "failed to connect\n");
+			//     exit(2);
+			// }
+
+			freeaddrinfo(servinfo); // all done with this structure
+}
 
 void parse(char* mesg, int n)
 {
 	char str[1000];
 	char packet_host[1000];
+	char host_name[1000] = "Host: ";
+	char ip[100];
+	char* ret;
+	printf("-------------------------------------------------------\n");
+	//printf("%s\n",mesg);
 	
+	ret = strstr(mesg, host_name);
+	if(ret != NULL)
+	{
+		sscanf(((char*)ret+6), "%s", str);
+	 
+		char* ip = hostname_to_ip(str);
+		if(ip != NULL)
+		{
+			printf("%s resolved to %s" , str , ip);
+		}
+		else
+		{
+			printf("error resolving IP\n");
+		}
+		
+	   		 
+		//printf("%s\n",str );
 
-	//printf("%d BYTES\n",n);
-	//printf("-------------------------------------------------------\n");
-            mesg[n] = 0;
-            // printf("Received the following:\n");
-            // printf("%s",mesg);
-			while (sscanf(mesg, "%s", str)!=EOF)
-			{
-				mesg = mesg + strlen(str);
-				// if(!strcmp(str,"Host:") )
-				// {
-				// 	sscanf(mesg,"%s",packet_host);
-				// 	printf("%s",packet_host);
-				// }
-				printf("%s",str);
-			}
-			//printf("%s",packet_host);
-    //printf("-------------------------------------------------------\n");
+	}
+	printf("-------------------------------------------------------\n");
 
 }
 int main ( int argc, char *argv[] )
@@ -128,9 +231,16 @@ if(argc != 3)
          {
             n = recvfrom(connfd,mesg,1000,0,(struct sockaddr *)&cliaddr,&clilen);
             // mesg[n] = 0;
-            parse(mesg,n);
-            sendto(connfd,mesg,n,0,(struct sockaddr *)&cliaddr,sizeof(cliaddr));
-            
+            //printf("line 136\n");
+            if(n != 0)
+            {
+            	mesg[n] = 0;
+            	parse(mesg,n);
+            	//sendto(connfd,mesg,n,0,(struct sockaddr *)&cliaddr,sizeof(cliaddr));
+            	memset(mesg,0,sizeof(mesg));
+            	n = 0;
+            }
+                  
          }
          
       }
