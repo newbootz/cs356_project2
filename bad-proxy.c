@@ -67,7 +67,7 @@ char* hostname_to_ip(char* host)
 			            
 			                    return NULL;
 			            	}
-                			printf("%s: IPv4 = %s\n", host, addr);
+                			//printf("%s: IPv4 = %s\n", host, addr);
                 			return addr;
      
  
@@ -128,20 +128,42 @@ void parse(char* mesg, int n)
 	char str[1000];
 	char packet_host[1000];
 	char host_name[1000] = "Host: ";
+	char port_number[100] = ":";
 	char ip[100];
 	char* ret;
+	char* pn;
+	char str_pn[100];
 	printf("-------------------------------------------------------\n");
-	//printf("%s\n",mesg);
+	printf("%s\n",mesg);
 	
 	ret = strstr(mesg, host_name);
 	if(ret != NULL)
 	{
 		sscanf(((char*)ret+6), "%s", str);
-	 
+	 	pn = strstr(str, port_number);
+	 	if(pn != NULL)
+	 	{
+	 		int pn_len = -1;
+	 		sscanf(((char*)pn), "%s+1", str_pn);
+	 		pn_len = strlen(str_pn);
+	 		str[strlen(str)-pn_len] = 0;
+	 		//printf("New hostname is  %s\n", str);
+
+
+	 	}
 		char* ip = hostname_to_ip(str);
 		if(ip != NULL)
 		{
-			printf("%s resolved to %s" , str , ip);
+			if(pn == NULL)
+			{
+				printf("%s resolved to %s\n" , str , ip);
+			}
+			else
+			{
+
+				printf("%s resolved to %s   port_number %s\n" , str , ip, str_pn);
+			}
+			
 		}
 		else
 		{
