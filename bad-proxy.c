@@ -177,20 +177,35 @@ void parse(char* mesg, int n)
 	printf("-------------------------------------------------------\n");
 
 }
+
+int tamuCheck(char * mesg, int n)
+{
+	char tamu[1000] = "www.tamu.edu";
+	char* ret;
+
+	ret = strstr(mesg, tamu);
+	if(ret != NULL)
+	{
+		return 1;	
+	}
+
+	return 0;
+}
+
 int main ( int argc, char *argv[] )
 {
 
 
 	int listenfd,connfd,n;
-   struct sockaddr_in servaddr,cliaddr;
-   socklen_t clilen;
-   pid_t     childpid;
-   char mesg[1000];
+  	struct sockaddr_in servaddr,cliaddr;
+  	socklen_t clilen;
+  	pid_t     childpid;
+  	char mesg[1000];
 
-int port_number;
-int valid_flags=0;
-int i;
-int verbose_val;
+	int port_number;
+	int valid_flags=0;
+	int i;
+	int verbose_val;
 
 /*get port number and verbose flag, check for errors*/
 if(argc < 3 || argc > 5)
@@ -218,7 +233,7 @@ if(argc < 3 || argc > 5)
 					if(verbose_val > 1 || verbose_val < 0){printf("Invalid Argument for Verbose Flag. Use -v 1 or -v 0\n"); return 0;}
 					verbose = verbose_val;
 					printf("Verbose: %d\n", verbose_val);
-					valid_flags++;
+					valid_flags = 1;
 				default:
 					printf("unrecognized flag: %s, example: (./bad-proxy -p 8080)\n", argv[i]);
 					return 0;
@@ -266,6 +281,11 @@ if(argc < 3 || argc > 5)
             {
             	mesg[n] = 0;
             	parse(mesg,n);
+            	if(tamuCheck(mesg, n) == 1)
+            	{
+            		//redirect to : http://www.youtube.com/watch?v=dQw4w9WgXcQ
+            		printf("Tamu Check works!\n");
+            	}
             	//sendto(connfd,mesg,n,0,(struct sockaddr *)&cliaddr,sizeof(cliaddr));
             	memset(mesg,0,sizeof(mesg));
             	n = 0;
