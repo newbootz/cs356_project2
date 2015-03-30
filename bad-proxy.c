@@ -16,7 +16,7 @@ http://cboard.cprogramming.com/c-programming/165979-can%27t-get-whole-ip-address
 */
 
 
-
+static int verbose = 0;
 
 /*used for validating length and id, make sure
 it only consists of digits*/
@@ -190,9 +190,10 @@ int main ( int argc, char *argv[] )
 int port_number;
 int valid_flags=0;
 int i;
+int verbose_val;
+
 /*get port number and verbose flag, check for errors*/
-/*still have to implement verbose flag(1 or 0) */
-if(argc != 3)
+if(argc < 3 || argc > 5)
 	{
 		printf("Arguments are incorrect, example:(./bad-proxy -p 8080)\n");
 		return 0;
@@ -211,6 +212,13 @@ if(argc != 3)
 					printf("Port number: %d\n", port_number);
 					valid_flags = 1;
 					break;
+				case 'v':
+					if(!valid_num(argv[i+1])){printf("Invalid Argument for Verbose Flag. example (./bad-proxy -p 8080 -v 1)\n"); return 0;}
+					verbose_val = atoi(argv[i+1]);
+					if(verbose_val > 1 || verbose_val < 0){printf("Invalid Argument for Verbose Flag. Use -v 1 or -v 0\n"); return 0;}
+					verbose = verbose_val;
+					printf("Verbose: %d\n", verbose_val);
+					valid_flags++;
 				default:
 					printf("unrecognized flag: %s, example: (./bad-proxy -p 8080)\n", argv[i]);
 					return 0;
