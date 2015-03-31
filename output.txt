@@ -1,0 +1,47 @@
+Jesus Galvan(jg42437)
+Juan Pablo Mata (jpm2873)
+
+------------------------------------------------------------
+bad-proxy
+------------------------------------------------------------
+steam-vortex$ ./bad-proxy -p 12002 -v 1
+Port number: 12002
+Verbose: 1
+GET /~erozner/cs356/test.html at Host www.cs.utexas.edu
+Page found with Google
+------------------------------------------------------------
+
+
+
+------------------------------------------------------------
+telnet client
+------------------------------------------------------------
+JesGalvan:cs356_project2 newuser$ telnet steam-vortex.cs.utexas.edu 12002
+Trying 128.83.120.239...
+Connected to steam-vortex.cs.utexas.edu.
+Escape character is '^]'.
+GET http://www.cs.utexas.edu/~erozner/cs356/test.html HTTP/1.0
+HTTP/1.1 200 OK
+Date: Tue, 31 Mar 2015 19:51:15 GMT
+Server: Apache
+Last-Modified: Wed, 11 Mar 2015 15:45:20 GMT
+ETag: "da131a-b6-5110527a137bc"
+Accept-Ranges: bytes
+Content-Length: 182
+Vary: Accept-Encoding
+Connection: close
+Content-Type: text/html
+
+<!DOCTYPE html>
+<html>
+<head>
+<title>Hi there test</title>
+</head>
+<body>
+What would Dumbledore do?<br>
+This is a page a simple page. Is elgooG google elgooG here?
+</body>
+</html>
+
+Connection closed by foreign host.
+------------------------------------------------------------
